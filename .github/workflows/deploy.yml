@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  # Lets you re-run the deploy from the Actions tab without pushing a commit.
+  # Use this after rotating the STRAVA_SESSION secret.
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -11,10 +14,34 @@ jobs:
     name: Deploy
     steps:
       - uses: actions/checkout@v4
+
       - name: Set KV namespace ID
         run: sed -i 's/<NAMESPACE_ID>/${{ secrets.KV_NAMESPACE_ID }}/' wrangler.toml
-      - name: Publish
+
+      # First pass: make sure the Worker exists. On a brand new account there is
+      # nothing to attach secrets to yet, so this has to run before the secrets
+      # step or `wrangler secret bulk` fails with "script not found".
+      - name: Deploy worker
         uses: cloudflare/wrangler-action@v3
         with:
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
           apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          wranglerVersion: "4"
+          command: deploy
+
+      # Second pass: push the Strava credentials, then redeploy so the running
+      # script picks them up. Rotating the cookie is now just "update the GitHub
+      # secret, re-run this workflow".
+      - name: Upload secrets and redeploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          wranglerVersion: "4"
+          command: deploy
+          secrets: |
+            STRAVA_ID
+            STRAVA_SESSION
+        env:
+          STRAVA_ID: ${{ secrets.STRAVA_ID }}
+          STRAVA_SESSION: ${{ secrets.STRAVA_SESSION }}
