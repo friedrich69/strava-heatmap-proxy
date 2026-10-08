@@ -22,7 +22,7 @@ jobs:
       # nothing to attach secrets to yet, so this has to run before the secrets
       # step or `wrangler secret bulk` fails with "script not found".
       - name: Deploy worker
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
@@ -33,7 +33,7 @@ jobs:
       # script picks them up. Rotating the cookie is now just "update the GitHub
       # secret, re-run this workflow".
       - name: Upload secrets and redeploy
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
