@@ -11,6 +11,7 @@ const Env = {
   STRAVA_SESSION: globalThis.STRAVA_SESSION,
   TILE_CACHE_SECS: +TILE_CACHE_SECS || 0,
   ALLOWED_ORIGINS: (globalThis.ALLOWED_ORIGINS || "*").split(","),
+  //Holger Node24
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24
 };
 
